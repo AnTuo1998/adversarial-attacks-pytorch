@@ -3,6 +3,7 @@ dist/*
 robustbench/*
 autoattack/*
 torchattacks.egg-info/*
+data
 data/*
 models/*
 demos/data/MNIST/*
