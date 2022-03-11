@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from ..attack import Attack
-
+from tqdm import tqdm
 
 class DeepFool(Attack):
     r"""
@@ -26,10 +26,11 @@ class DeepFool(Attack):
         >>> adv_images = attack(images, labels)
 
     """
-    def __init__(self, model, steps=50, overshoot=0.02):
+    def __init__(self, model, eps=0.1, steps=50, overshoot=0):
         super().__init__("DeepFool", model)
         self.steps = steps
         self.overshoot = overshoot
+        self.eps = eps
         self._supported_mode = ['default']
 
     def forward(self, images, labels, return_target_labels=False):
@@ -49,10 +50,17 @@ class DeepFool(Attack):
             image = images[idx:idx+1].clone().detach()
             adv_images.append(image)
 
-        while (True in correct) and (curr_steps < self.steps):
+        # while (True in correct) and (curr_steps < self.steps):
+        for curr_step in range(self.steps):
+            if not (True in correct):
+                break
             for idx in range(batch_size):
+                ori_image = images[idx]
                 if not correct[idx]: continue
                 early_stop, pre, adv_image = self._forward_indiv(adv_images[idx], labels[idx])
+                # if torch.norm(ori_image - adv_image, p='inf') > self.eps:
+                #     correct[idx] = False
+                #     continue
                 adv_images[idx] = adv_image
                 target_labels[idx] = pre
                 if early_stop:

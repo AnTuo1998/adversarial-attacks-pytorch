@@ -124,6 +124,8 @@ class Attack(object):
         """
         if type == 'float':
             self._return_type = 'float'
+        if type == 'double':
+            self._return_type = 'double'
         elif type == 'int':
             self._return_type = 'int'
         else:

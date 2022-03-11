@@ -74,12 +74,12 @@ class APGD(Attack):
     
     def dlr_loss(self, x, y):
         x_sorted, ind_sorted = x.sort(dim=1)
-        ind = (ind_sorted[:, -1] == y).float()
+        ind = (ind_sorted[:, -1] == y).double()
         
         return -(x[np.arange(x.shape[0]), y] - x_sorted[:, -2] * ind - x_sorted[:, -1] * (1. - ind)) / (x_sorted[:, -1] - x_sorted[:, -3] + 1e-12)
     
     def attack_single_run(self, x_in, y_in):
-        x = x_in.clone() if len(x_in.shape) == 4 else x_in.clone().unsqueeze(0)
+        x = x_in.clone() if len(x_in.shape) == 2 else x_in.clone().unsqueeze(0)
         y = y_in.clone() if len(y_in.shape) == 1 else y_in.clone().unsqueeze(0)
         
         self.steps_2, self.steps_min, self.size_decr = max(int(0.22 * self.steps), 1), max(int(0.06 * self.steps), 1), max(int(0.03 * self.steps), 1)
@@ -215,15 +215,15 @@ class APGD(Attack):
 
     def perturb(self, x_in, y_in, best_loss=False, cheap=True):
         assert self.norm in ['Linf', 'L2']
-        x = x_in.clone() if len(x_in.shape) == 4 else x_in.clone().unsqueeze(0)
+        x = x_in.clone() if len(x_in.shape) == 2 else x_in.clone().unsqueeze(0)
         y = y_in.clone() if len(y_in.shape) == 1 else y_in.clone().unsqueeze(0)
         
         adv = x.clone()
-        acc = self.model(x).max(1)[1] == y
-        loss = -1e10 * torch.ones_like(acc).float()
+        acc = self.model(x).argmax(dim=1) == y
+        loss = -1e10 * torch.ones_like(acc).double()
         if self.verbose:
             print('-------------------------- running {}-attack with epsilon {:.4f} --------------------------'.format(self.norm, self.eps))
-            print('initial accuracy: {:.2%}'.format(acc.float().mean()))
+            print('initial accuracy: {:.2%}'.format(acc.double().mean()))
         startt = time.time()
         
         if not best_loss:
@@ -246,7 +246,7 @@ class APGD(Attack):
                         adv[ind_to_fool[ind_curr]] = adv_curr[ind_curr].clone()
                         if self.verbose:
                             print('restart {} - robust accuracy: {:.2%} - cum. time: {:.1f} s'.format(
-                                counter, acc.float().mean(), time.time() - startt))
+                                counter, acc.double().mean(), time.time() - startt))
             
             return acc, adv
         

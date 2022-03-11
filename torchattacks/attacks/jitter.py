@@ -75,13 +75,13 @@ class Jitter(Attack):
 
             # Calculate loss
             if self._targeted:
-                target_Y = F.one_hot(target_labels, num_classes=logits.shape[-1]).float()
+                target_Y = F.one_hot(target_labels, num_classes=logits.shape[-1]).double()
                 cost = -loss(hat_z, target_Y).mean(dim=1)
             else:
-                Y = F.one_hot(labels, num_classes=logits.shape[-1]).float()
+                Y = F.one_hot(labels, num_classes=logits.shape[-1]).double()
                 cost = loss(hat_z, Y).mean(dim=1)
 
-            norm_r = torch.norm((adv_images - images), p=float('inf'), dim=[1,2,3])
+            norm_r = torch.norm((adv_images - images), p=float('inf'), dim=1)
             nonzero_r = (norm_r != 0)
             cost[wrong*nonzero_r] /= norm_r[wrong*nonzero_r]
 
