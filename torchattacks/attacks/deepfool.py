@@ -9,7 +9,7 @@ class DeepFool(Attack):
     'DeepFool: A Simple and Accurate Method to Fool Deep Neural Networks'
     [https://arxiv.org/abs/1511.04599]
 
-    Distance Measure : L2
+    Distance Measure : L2 Linf
 
     Arguments:
         model (nn.Module): model to attack.
@@ -26,12 +26,15 @@ class DeepFool(Attack):
         >>> adv_images = attack(images, labels)
 
     """
-    def __init__(self, model, eps=0.1, steps=50, overshoot=0):
+
+    def __init__(self, model, norm='L2', eps=0.1, steps=50, overshoot=0, tqdm=False):
         super().__init__("DeepFool", model)
         self.steps = steps
         self.overshoot = overshoot
         self.eps = eps
+        self.norm = norm
         self._supported_mode = ['default']
+        self.tqdm = tqdm
 
     def forward(self, images, labels, return_target_labels=False):
         r"""
@@ -51,16 +54,22 @@ class DeepFool(Attack):
             adv_images.append(image)
 
         # while (True in correct) and (curr_steps < self.steps):
-        for curr_step in range(self.steps):
+        if self.tqdm:
+            loop_range = tqdm(range(self.steps))
+        else:
+            loop_range = range(self.steps)
+            
+        for curr_step in loop_range:
             if not (True in correct):
                 break
             for idx in range(batch_size):
                 ori_image = images[idx]
                 if not correct[idx]: continue
                 early_stop, pre, adv_image = self._forward_indiv(adv_images[idx], labels[idx])
-                # if torch.norm(ori_image - adv_image, p='inf') > self.eps:
-                #     correct[idx] = False
-                #     continue
+                if (self.norm == "Linf" and torch.norm(ori_image - adv_image, p=float('inf')) > self.eps) or \
+                        (self.norm == "L2" and torch.norm(ori_image - adv_image, p=2) > self.eps):
+                    correct[idx] = False
+                    continue
                 adv_images[idx] = adv_image
                 target_labels[idx] = pre
                 if early_stop:
@@ -93,13 +102,21 @@ class DeepFool(Attack):
 
         f_prime = f_k - f_0
         w_prime = w_k - w_0
-        value = torch.abs(f_prime) \
-                / torch.norm(nn.Flatten()(w_prime), p=2, dim=1)
-        _, hat_L = torch.min(value, 0)
+        if self.norm == "L2":
+            value = torch.abs(f_prime) \
+                    / torch.norm(nn.Flatten()(w_prime), p=2, dim=1)
+            _, hat_L = torch.min(value, 0)
 
-        delta = (torch.abs(f_prime[hat_L])*w_prime[hat_L] \
-                 / (torch.norm(w_prime[hat_L], p=2)**2))
+            delta = (torch.abs(f_prime[hat_L])*w_prime[hat_L] \
+                    / (torch.norm(w_prime[hat_L], p=2)**2))
+        elif self.norm == "Linf":
+            value = torch.abs(f_prime) \
+                    / torch.norm(nn.Flatten()(w_prime), p=1, dim=1)
+            _, hat_L = torch.min(value, 0)
 
+            delta = (torch.abs(f_prime[hat_L])*torch.sign(w_prime[hat_L])) \
+                    / torch.norm(w_prime[hat_L], p=1)
+            
         target_label = hat_L if hat_L < label else hat_L+1
 
         adv_image = image + (1+self.overshoot)*delta

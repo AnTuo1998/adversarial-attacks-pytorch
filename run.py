@@ -57,50 +57,49 @@ model = MultiLayerPerceptron()
 # print(model.fc1.weight.shape)
 
 eps = 0.2
-# for eps in [0.2, 0.15, 0.1, 0.05]:
-#     print("eps=", eps)
-
-attack_method = SparseFool(model=model)
-X_adv = attack_method.forward(X_test, Y_test)
-Y_pred = model(X_adv).argmax(dim=1)
-acc = torch.sum((Y_pred == Y_test)).item() * 1.0 / nTest
-print("Test accuracy is", acc)
-
-
-    # attack_method = PGD(model=model, eps=eps)
-    # X_adv = attack_method.forward(X_test, Y_test)
-    # Y_pred = model(X_adv).argmax(dim=1)
-    # acc = torch.sum((Y_pred == Y_test)).item() * 1.0 / nTest
-    # print("Test accuracy is", acc)
+for eps in [0.2]:
+    print("eps =", eps)
+    attack_method = SparseFool(model=model)
+    X_adv = attack_method.forward(X_test, Y_test)
+    Y_pred = model(X_adv).argmax(dim=1)
+    acc = torch.sum((Y_pred == Y_test)).item() * 1.0 / nTest
+    print("Test accuracy is", acc)
 
 
-    # attack_method = FAB(model=model, eps=eps)
-    # X_adv = attack_method.forward(X_test, Y_test)
-    # # print(torch.norm(X_test-X_adv, p=float("inf")))
-    # Y_pred = model(X_adv).argmax(dim=1)
-    # acc = torch.sum((Y_pred == Y_test)).item() * 1.0 / nTest
-    # print("Test accuracy is", acc)
+# attack_method = PGD(model=model, eps=eps)
+# X_adv = attack_method.forward(X_test, Y_test)
+# Y_pred = model(X_adv).argmax(dim=1)
+# acc = torch.sum((Y_pred == Y_test)).item() * 1.0 / nTest
+# print("Test accuracy is", acc)
 
-    # attack_method = TPGD(model=model, eps=eps)
-    # X_adv = attack_method.forward(X_test, Y_test)
-    # # print(torch.norm(X_test-X_adv, p=float("inf")))
-    # Y_pred = model(X_adv).argmax(dim=1)
-    # acc = torch.sum((Y_pred == Y_test)).item() * 1.0 / nTest
-    # print("Test accuracy is", acc)
 
-    # attack_method = EOTPGD(model=model, eps=eps)
-    # X_adv = attack_method.forward(X_test, Y_test)
-    # # print(torch.norm(X_test-X_adv, p=float("inf")))
-    # Y_pred = model(X_adv).argmax(dim=1)
-    # acc = torch.sum((Y_pred == Y_test)).item() * 1.0 / nTest
-    # print("Test accuracy is", acc)
+# attack_method = FAB(model=model, eps=eps)
+# X_adv = attack_method.forward(X_test, Y_test)
+# # print(torch.norm(X_test-X_adv, p=float("inf")))
+# Y_pred = model(X_adv).argmax(dim=1)
+# acc = torch.sum((Y_pred == Y_test)).item() * 1.0 / nTest
+# print("Test accuracy is", acc)
 
-    # attack_method = Jitter(model=model, eps=eps)
-    # X_adv = attack_method.forward(X_test, Y_test)
-    # print(torch.norm(X_test-X_adv, p=float("inf")))
-    # Y_pred = model(X_adv).argmax(dim=1)
-    # acc = torch.sum((Y_pred == Y_test)).item() * 1.0 / nTest
-    # print("Test accuracy is", acc)
+# attack_method = TPGD(model=model, eps=eps)
+# X_adv = attack_method.forward(X_test, Y_test)
+# # print(torch.norm(X_test-X_adv, p=float("inf")))
+# Y_pred = model(X_adv).argmax(dim=1)
+# acc = torch.sum((Y_pred == Y_test)).item() * 1.0 / nTest
+# print("Test accuracy is", acc)
+
+# attack_method = EOTPGD(model=model, eps=eps)
+# X_adv = attack_method.forward(X_test, Y_test)
+# # print(torch.norm(X_test-X_adv, p=float("inf")))
+# Y_pred = model(X_adv).argmax(dim=1)
+# acc = torch.sum((Y_pred == Y_test)).item() * 1.0 / nTest
+# print("Test accuracy is", acc)
+
+# attack_method = Jitter(model=model, eps=eps)
+# X_adv = attack_method.forward(X_test, Y_test)
+# print(torch.norm(X_test-X_adv, p=float("inf")))
+# Y_pred = model(X_adv).argmax(dim=1)
+# acc = torch.sum((Y_pred == Y_test)).item() * 1.0 / nTest
+# print("Test accuracy is", acc)
 
 
 
